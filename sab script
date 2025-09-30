@@ -1,0 +1,302 @@
+-- Services
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Player = Players.LocalPlayer
+
+-- Daily key URL (raw GitHub file)
+local keyUrl = "https://raw.githubusercontent.com/Nc-roblox/Daily-Key-Page/refs/heads/main/dailykey.txt"
+
+-- Function to fetch today's key
+local function getTodayKey()
+    local success, result = pcall(function()
+        return game:HttpGet(keyUrl)
+    end)
+    if success and result then
+        local key = result:gsub("\r",""):gsub("\n",""):gsub("^%s+",""):gsub("%s+$","")
+        return key
+    else
+        warn("Could not fetch key")
+        return nil
+    end
+end
+
+-- ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = Player:WaitForChild("PlayerGui")
+ScreenGui.Name = "NC_RBX_GUI"
+
+-- ===== Loading Screen =====
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Size = UDim2.new(0, 400, 0, 100)
+LoadingFrame.Position = UDim2.new(0.5, -200, 0.5, -50)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.Parent = ScreenGui
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(1,0,0,40)
+LoadingText.Position = UDim2.new(0,0,0,10)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "Loading..."
+LoadingText.TextColor3 = Color3.fromRGB(0,170,255)
+LoadingText.Font = Enum.Font.GothamBold
+LoadingText.TextScaled = true
+LoadingText.Parent = LoadingFrame
+
+local LoadingBarBack = Instance.new("Frame")
+LoadingBarBack.Size = UDim2.new(0.8,0,0,20)
+LoadingBarBack.Position = UDim2.new(0.1,0,0,60)
+LoadingBarBack.BackgroundColor3 = Color3.fromRGB(50,50,50)
+LoadingBarBack.BorderSizePixel = 0
+LoadingBarBack.Parent = LoadingFrame
+
+local LoadingBar = Instance.new("Frame")
+LoadingBar.Size = UDim2.new(0,0,1,0)
+LoadingBar.Position = UDim2.new(0,0,0,0)
+LoadingBar.BackgroundColor3 = Color3.fromRGB(0,170,255)
+LoadingBar.BorderSizePixel = 0
+LoadingBar.Parent = LoadingBarBack
+
+-- Tween for 3-second loading
+local tween = TweenService:Create(LoadingBar, TweenInfo.new(3, Enum.EasingStyle.Linear), {Size = UDim2.new(1,0,1,0)})
+tween:Play()
+tween.Completed:Connect(function()
+    LoadingFrame:Destroy()
+    CreateKeyPrompt()
+end)
+
+-- ===== Key Prompt =====
+function CreateKeyPrompt()
+    local KeyFrame = Instance.new("Frame")
+    KeyFrame.Size = UDim2.new(0,400,0,150)
+    KeyFrame.Position = UDim2.new(0.5,-200,0.5,-75)
+    KeyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    KeyFrame.BorderSizePixel = 0
+    KeyFrame.Parent = ScreenGui
+
+    local KeyLabel = Instance.new("TextLabel")
+    KeyLabel.Size = UDim2.new(1,0,0,40)
+    KeyLabel.Position = UDim2.new(0,0,0,10)
+    KeyLabel.BackgroundTransparency = 1
+    KeyLabel.Text = "Enter today's key:"
+    KeyLabel.TextColor3 = Color3.fromRGB(0,170,255)
+    KeyLabel.Font = Enum.Font.GothamBold
+    KeyLabel.TextScaled = true
+    KeyLabel.Parent = KeyFrame
+
+    local KeyBox = Instance.new("TextBox")
+    KeyBox.Size = UDim2.new(0.8,0,0,40)
+    KeyBox.Position = UDim2.new(0.1,0,0,60)
+    KeyBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    KeyBox.TextColor3 = Color3.fromRGB(255,255,255)
+    KeyBox.Font = Enum.Font.GothamBold
+    KeyBox.TextScaled = true
+    KeyBox.ClearTextOnFocus = false
+    KeyBox.PlaceholderText = "Paste key here"
+    KeyBox.Parent = KeyFrame
+
+    local ConfirmButton = Instance.new("TextButton")
+    ConfirmButton.Size = UDim2.new(0.4,0,0,40)
+    ConfirmButton.Position = UDim2.new(0.3,0,0,110)
+    ConfirmButton.BackgroundColor3 = Color3.fromRGB(0,170,255)
+    ConfirmButton.Text = "Confirm"
+    ConfirmButton.Font = Enum.Font.GothamBold
+    ConfirmButton.TextColor3 = Color3.fromRGB(255,255,255)
+    ConfirmButton.TextScaled = true
+    ConfirmButton.Parent = KeyFrame
+
+    ConfirmButton.MouseButton1Click:Connect(function()
+        local todayKey = getTodayKey()
+        if todayKey and KeyBox.Text:gsub("%s+","") == todayKey then
+            KeyFrame:Destroy()
+            CreateConsole()
+        else
+            KeyLabel.Text = "Wrong key! Try again."
+            KeyLabel.TextColor3 = Color3.fromRGB(255,0,0)
+        end
+    end)
+end
+
+-- ===== Console Creation Function =====
+function CreateConsole()
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 400, 0, 300)
+    Frame.Position = UDim2.new(0.3,0,0.3,0)
+    Frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    Frame.BorderSizePixel = 0
+    Frame.Parent = ScreenGui
+    Frame.ZIndex = 5
+
+    -- Title
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1,0,0,30)
+    Title.Position = UDim2.new(0,0,0,0)
+    Title.BackgroundColor3 = Color3.fromRGB(0,170,255)
+    Title.Text = "NC RBX - Key valid for 24h"
+    Title.TextColor3 = Color3.fromRGB(255,255,255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextScaled = true
+    Title.Parent = Frame
+    Title.ZIndex = 6
+
+    -- Minimize / Maximize
+    local MinButton = Instance.new("TextButton")
+    MinButton.Size = UDim2.new(0,30,0,30)
+    MinButton.Position = UDim2.new(1,-35,0,0)
+    MinButton.BackgroundColor3 = Color3.fromRGB(255,100,100)
+    MinButton.Text = "-"
+    MinButton.Font = Enum.Font.GothamBold
+    MinButton.TextColor3 = Color3.fromRGB(255,255,255)
+    MinButton.TextScaled = true
+    MinButton.Parent = Frame
+    MinButton.ZIndex = 7
+
+    local Minimized = false
+    local SavedSize = Frame.Size
+
+    MinButton.MouseButton1Click:Connect(function()
+        if not Minimized then
+            SavedSize = Frame.Size
+            Frame.Size = UDim2.new(0,150,0,40)
+            for _,child in pairs(Frame:GetChildren()) do
+                if child ~= Title and child ~= MinButton then
+                    child.Visible = false
+                end
+            end
+            MinButton.Text = "+"
+            Minimized = true
+        else
+            Frame.Size = SavedSize
+            for _,child in pairs(Frame:GetChildren()) do
+                child.Visible = true
+            end
+            MinButton.Text = "-"
+            Minimized = false
+        end
+    end)
+
+    -- Infinite Jump Toggle
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0,140,0,40)
+    ToggleButton.Position = UDim2.new(0.1,0,0,50)
+    ToggleButton.Text = "OFF"
+    ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(255,0,0)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextScaled = true
+    ToggleButton.Parent = Frame
+    ToggleButton.ZIndex = 6
+
+    local InfiniteJumpEnabled = false
+    ToggleButton.MouseButton1Click:Connect(function()
+        InfiniteJumpEnabled = not InfiniteJumpEnabled
+        if InfiniteJumpEnabled then
+            ToggleButton.Text = "ON"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(0,255,0)
+        else
+            ToggleButton.Text = "OFF"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(255,0,0)
+        end
+    end)
+
+    -- Boost Multiplier
+    local MultiLabel = Instance.new("TextLabel")
+    MultiLabel.Size = UDim2.new(1,0,0,25)
+    MultiLabel.Position = UDim2.new(0,0,0,100)
+    MultiLabel.BackgroundTransparency = 1
+    MultiLabel.Text = "Boost Multiplier"
+    MultiLabel.TextColor3 = Color3.fromRGB(0,170,255)
+    MultiLabel.Font = Enum.Font.GothamBold
+    MultiLabel.TextScaled = true
+    MultiLabel.Parent = Frame
+    MultiLabel.ZIndex = 6
+
+    local multipliers = {0.8,1,1.2,1.5,1.7,2}
+    local ButtonsContainer = Instance.new("Frame")
+    ButtonsContainer.Size = UDim2.new(0,350,0,80)
+    ButtonsContainer.Position = UDim2.new(0.05,0,0,130)
+    ButtonsContainer.BackgroundTransparency = 1
+    ButtonsContainer.Parent = Frame
+    ButtonsContainer.ZIndex = 6
+
+    local JumpPowerMultiplier = 1
+    for i, mult in ipairs(multipliers) do
+        local Btn = Instance.new("TextButton")
+        Btn.Size = UDim2.new(0,60,0,30)
+        if i <= 3 then
+            Btn.Position = UDim2.new(0.05 + (i-1)*0.3,0,0,0)
+        else
+            Btn.Position = UDim2.new(0.05 + (i-4)*0.3,0,0,40)
+        end
+        Btn.Text = mult.."x"
+        Btn.TextColor3 = Color3.fromRGB(255,255,255)
+        Btn.BackgroundColor3 = Color3.fromRGB(0,0,255)
+        Btn.Font = Enum.Font.GothamBold
+        Btn.TextScaled = true
+        Btn.Parent = ButtonsContainer
+        Btn.ZIndex = 6
+
+        Btn.MouseButton1Click:Connect(function()
+            JumpPowerMultiplier = mult
+        end)
+    end
+
+    -- Dragging logic
+    local dragging, dragInput, dragStart, startPos
+    local function update(input)
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                                   startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    Frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = Frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    Frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            update(input)
+        end
+    end)
+
+    -- Infinite Jump logic
+    local jumpDelay = 0.18
+    local lastJumpTime = 0
+    local function SetupCharacter(Char)
+        local Humanoid = Char:WaitForChild("Humanoid")
+        local RootPart = Char:WaitForChild("HumanoidRootPart")
+
+                UserInputService.JumpRequest:Connect(function()
+            if InfiniteJumpEnabled then
+                local now = tick()
+                if now - lastJumpTime >= jumpDelay then
+                    RootPart.Velocity = Vector3.new(RootPart.Velocity.X, Humanoid.JumpPower * JumpPowerMultiplier, RootPart.Velocity.Z)
+                    lastJumpTime = now
+                end
+            end
+        end)
+    end
+
+    if Player.Character then
+        SetupCharacter(Player.Character)
+    end
+    Player.CharacterAdded:Connect(SetupCharacter)
+end
+
