@@ -70,52 +70,131 @@ end)
 -- ===== Key Prompt =====
 function CreateKeyPrompt()
     local KeyFrame = Instance.new("Frame")
-    KeyFrame.Size = UDim2.new(0,400,0,150)
-    KeyFrame.Position = UDim2.new(0.5,-200,0.5,-75)
+    KeyFrame.Size = UDim2.new(0,420,0,200)
+    KeyFrame.Position = UDim2.new(0.5,-210,0.5,-100)
     KeyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     KeyFrame.BorderSizePixel = 0
     KeyFrame.Parent = ScreenGui
+    KeyFrame.ZIndex = 50
+
+    local KeyTitle = Instance.new("TextLabel")
+    KeyTitle.Size = UDim2.new(1,-16,0,28)
+    KeyTitle.Position = UDim2.new(0,8,0,6)
+    KeyTitle.BackgroundTransparency = 1
+    KeyTitle.Text = "Enter today's key"
+    KeyTitle.TextColor3 = Color3.fromRGB(255,255,255)
+    KeyTitle.Font = Enum.Font.GothamBold
+    KeyTitle.TextSize = 20
+    KeyTitle.TextXAlignment = Enum.TextXAlignment.Left
+    KeyTitle.Parent = KeyFrame
 
     local KeyLabel = Instance.new("TextLabel")
-    KeyLabel.Size = UDim2.new(1,0,0,40)
-    KeyLabel.Position = UDim2.new(0,0,0,10)
+    KeyLabel.Size = UDim2.new(1,-16,0,18)
+    KeyLabel.Position = UDim2.new(0,8,0,36)
     KeyLabel.BackgroundTransparency = 1
-    KeyLabel.Text = "Enter today's key:"
-    KeyLabel.TextColor3 = Color3.fromRGB(0,170,255)
-    KeyLabel.Font = Enum.Font.GothamBold
-    KeyLabel.TextScaled = true
+    KeyLabel.Text = "Get key from one of the providers below, then paste it."
+    KeyLabel.TextColor3 = Color3.fromRGB(180,180,180)
+    KeyLabel.Font = Enum.Font.SourceSans
+    KeyLabel.TextSize = 14
+    KeyLabel.TextXAlignment = Enum.TextXAlignment.Left
     KeyLabel.Parent = KeyFrame
 
     local KeyBox = Instance.new("TextBox")
-    KeyBox.Size = UDim2.new(0.8,0,0,40)
-    KeyBox.Position = UDim2.new(0.1,0,0,60)
+    KeyBox.Size = UDim2.new(1,-16,0,40)
+    KeyBox.Position = UDim2.new(0,8,0,60)
     KeyBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
     KeyBox.TextColor3 = Color3.fromRGB(255,255,255)
     KeyBox.Font = Enum.Font.GothamBold
-    KeyBox.TextScaled = true
+    KeyBox.TextSize = 18
     KeyBox.ClearTextOnFocus = false
     KeyBox.PlaceholderText = "Paste key here"
     KeyBox.Parent = KeyFrame
 
+    -- Buttons row: Get Link (Linkvertise) | Get Loot (LootLabs)
+    local ButtonsHolder = Instance.new("Frame")
+    ButtonsHolder.Size = UDim2.new(1,-16,0,44)
+    ButtonsHolder.Position = UDim2.new(0,8,0,110)
+    ButtonsHolder.BackgroundTransparency = 1
+    ButtonsHolder.Parent = KeyFrame
+
+    local GetLinkBtn = Instance.new("TextButton")
+    GetLinkBtn.Size = UDim2.new(0.48, -6, 1, 0)
+    GetLinkBtn.Position = UDim2.new(0,0,0,0)
+    GetLinkBtn.BackgroundColor3 = Color3.fromRGB(65,65,65)
+    GetLinkBtn.Text = "Get Key (Linkvertise)"
+    GetLinkBtn.Font = Enum.Font.GothamBold
+    GetLinkBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    GetLinkBtn.TextSize = 16
+    GetLinkBtn.Parent = ButtonsHolder
+
+    local GetLootBtn = Instance.new("TextButton")
+    GetLootBtn.Size = UDim2.new(0.48, -6, 1, 0)
+    GetLootBtn.Position = UDim2.new(0.52, 0, 0, 0)
+    GetLootBtn.BackgroundColor3 = Color3.fromRGB(65,65,65)
+    GetLootBtn.Text = "Get Key (LootLabs)"
+    GetLootBtn.Font = Enum.Font.GothamBold
+    GetLootBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    GetLootBtn.TextSize = 16
+    GetLootBtn.Parent = ButtonsHolder
+
+    -- Status label and Confirm button
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Size = UDim2.new(1,-16,0,18)
+    StatusLabel.Position = UDim2.new(0,8,0,160)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Text = ""
+    StatusLabel.TextColor3 = Color3.fromRGB(255,200,0)
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.TextSize = 14
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    StatusLabel.Parent = KeyFrame
+
     local ConfirmButton = Instance.new("TextButton")
-    ConfirmButton.Size = UDim2.new(0.4,0,0,40)
-    ConfirmButton.Position = UDim2.new(0.3,0,0,110)
+    ConfirmButton.Size = UDim2.new(0.4,0,0,34)
+    ConfirmButton.Position = UDim2.new(0.3,0,0,180)
     ConfirmButton.BackgroundColor3 = Color3.fromRGB(0,170,255)
-    ConfirmButton.Text = "Confirm"
+    ConfirmButton.Text = "Confirm & Run"
     ConfirmButton.Font = Enum.Font.GothamBold
     ConfirmButton.TextColor3 = Color3.fromRGB(255,255,255)
-    ConfirmButton.TextScaled = true
+    ConfirmButton.TextSize = 18
     ConfirmButton.Parent = KeyFrame
 
-    ConfirmButton.MouseButton1Click:Connect(function()
-        local todayKey = getTodayKey()
-        if todayKey and KeyBox.Text:gsub("%s+","") == todayKey then
-            KeyFrame:Destroy()
-            CreateConsole()
+    -- URLs to copy
+    local LINKVERTISE_URL = "https://link-target.net/1235059/NSQWIsqepdlm"
+    local LOOTLABS_URL = "https://loot-link.com/s?gxrkLwa4"
+
+    -- Helper to copy link and update status
+    local function copyLink(url, serviceName)
+        if setclipboard then
+            pcall(setclipboard, url)
+            StatusLabel.Text = serviceName .. " link copied to clipboard."
+            print("[KEY GUI] Copied:", url)
         else
-            KeyLabel.Text = "Wrong key! Try again."
-            KeyLabel.TextColor3 = Color3.fromRGB(255,0,0)
+            StatusLabel.Text = "Clipboard not available. Link printed to console."
+            print("[KEY GUI] " .. serviceName .. " link:", url)
         end
+    end
+
+    GetLinkBtn.MouseButton1Click:Connect(function()
+        copyLink(LINKVERTISE_URL, "Linkvertise")
+    end)
+
+    GetLootBtn.MouseButton1Click:Connect(function()
+        copyLink(LOOTLABS_URL, "LootLabs")
+    end)
+
+    ConfirmButton.MouseButton1Click:Connect(function()
+        StatusLabel.Text = "Verifying key..."
+        spawn(function()
+            local todayKey = getTodayKey()
+            if todayKey and KeyBox.Text and KeyBox.Text:gsub("%s+","") == todayKey then
+                StatusLabel.Text = "Key valid — launching."
+                KeyFrame:Destroy()
+                CreateConsole()
+            else
+                StatusLabel.Text = "Invalid key. Copy a link above to get today's key."
+            end
+        end)
     end)
 end
 
@@ -252,6 +331,17 @@ function CreateConsole()
     end
 
     Frame.InputBegan:Connect(function(input)
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                               startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+It appears you pasted the script and the end has a duplicated/garbled dragging section. I'll provide a corrected final tail you should replace the broken duplicated part with, and then confirm everything is ready to use. You need to remove the messy duplicate and instead append the correct dragging + infinite-jump code (that completes the function and script). Here's the clean continuation to paste where the duplication begins:
+
+```lua
+    Frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
@@ -279,11 +369,12 @@ function CreateConsole()
     -- Infinite Jump logic
     local jumpDelay = 0.18
     local lastJumpTime = 0
+
     local function SetupCharacter(Char)
         local Humanoid = Char:WaitForChild("Humanoid")
         local RootPart = Char:WaitForChild("HumanoidRootPart")
 
-                UserInputService.JumpRequest:Connect(function()
+        UserInputService.JumpRequest:Connect(function()
             if InfiniteJumpEnabled then
                 local now = tick()
                 if now - lastJumpTime >= jumpDelay then
@@ -299,4 +390,3 @@ function CreateConsole()
     end
     Player.CharacterAdded:Connect(SetupCharacter)
 end
-
